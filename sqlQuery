@@ -1,0 +1,70 @@
+-- В базе данных MS SQL Server есть продукты и категории.
+-- Одному продукту может соответствовать много категорий, в одной категории может быть много продуктов.
+-- Напишите SQL запрос для выбора всех пар «Имя продукта – Имя категории».
+-- Если у продукта нет категорий, то его имя все равно должно выводиться.
+
+DROP TABLE IF EXISTS dbo.intities_with_categories
+DROP TABLE IF EXISTS dbo.entities
+DROP TABLE IF EXISTS dbo.categories
+
+-- Создадим таблицу сущностей
+-- ID будем primary key
+CREATE TABLE entities 
+(
+	id INT PRIMARY KEY,
+	"name" TEXT
+);
+
+INSERT INTO entities
+VALUES
+	(1, 'Яблоко'),
+	(2, 'Машина'),
+	(3, 'Компьютер'),
+	(4, 'Мобильный телефон'),
+	(5, 'Трактор'),
+	(6, 'Документ'),
+	-- Дрова : сущность без категории
+	(7, 'Дрова'),
+	(8, 'Хлеб');
+
+-- Создадим таблицу с категориями сущностей
+-- ID будем primary key
+CREATE TABLE categories (
+	id INT PRIMARY KEY,
+	"name" TEXT
+);
+
+INSERT INTO categories
+VALUES
+	(1, 'Фрукт'),
+	(2, 'Авто техника'),
+	(3, 'Электроника'),
+	(4, 'ЭДО файл'),
+	-- Пищевой продукт : общая категория для яблока и хлеба 
+	(5, 'Пищевой продукт');
+
+-- Сформируем таблицу группировки сущностей и категорий
+CREATE TABLE intities_with_categories (
+	entityId INT FOREIGN KEY REFERENCES entities(id),
+	categoriesId INT FOREIGN KEY REFERENCES categories(id),
+	PRIMARY KEY (entityId, categoriesId)
+);
+
+INSERT INTO intities_with_categories
+VALUES
+	(1, 1),
+	(1, 5),
+	(2, 2),
+	(3, 3),
+	(4, 3),
+	(5, 2),
+	(6, 4),
+	(8, 5);
+
+-- Конечный запрос
+SELECT Ent."Name", Cat."Name"
+FROM entities as Ent
+LEFT JOIN intities_with_categories as entCat
+	ON Ent.id = entCat.entityId
+LEFT JOIN categories as Cat
+	ON entCat.categoriesId = Cat.id;
